@@ -41,6 +41,8 @@ pub use frame_support::{
 /// Import the template pallet.
 pub use pallet_template;
 
+pub use pallet_poe;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 

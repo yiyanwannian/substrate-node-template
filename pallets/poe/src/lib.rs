@@ -79,7 +79,7 @@ decl_module! {
 			let sender = ensure_signed(origin)?;
 			ensure!(!Proofs::<T>::contains_key(&claim), Error::<T>::ProofAlreadyExist);
 			Proofs::<T>::insert(&claim, (sender.clone(), frame_system::Module::<T>::block_number()));
-			Self::deposit_event(RawEvent::ClaimCreated(sender, claim));
+			Self::deposit_event(Event::<T>::ClaimCreated(sender, claim));
 
 			Ok(())
 		}
@@ -91,7 +91,7 @@ decl_module! {
 			let (owner, _block_number) = Proofs::<T>::get(&claim);
 			ensure!(owner == sender, Error::<T>::NotClaimOwner);
 			Proofs::<T>::remove(&claim);
-			Self::deposit_event(RawEvent::ClaimRevoked(sender, claim));
+			Self::deposit_event(Event::<T>::ClaimRevoked(sender, claim));
 
 			Ok(())
 		}

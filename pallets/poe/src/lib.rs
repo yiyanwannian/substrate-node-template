@@ -10,6 +10,7 @@ use frame_support::{
 };
 use frame_system::ensure_signed;
 use sp_std::prelude::*;
+// use sp_runtime::traits::BlakeTwo256;
 
 #[cfg(test)]
 mod mock;
@@ -40,7 +41,7 @@ decl_event!(
 	pub enum Event<T> where AccountId = <T as frame_system::Trait>::AccountId {
 		ClaimCreated(AccountId, Vec<u8>),
 		ClaimRevoked(AccountId, Vec<u8>),
-		// ClaimTransfer(AccountId, AccountId, Vec<u8>),
+		ClaimTransfer(AccountId, AccountId, Vec<u8>),
 	}
 );
 
@@ -50,8 +51,11 @@ decl_error! {
 		ProofAlreadyExist,
 		ClaimNotExist,
 		NotClaimOwner,
+		ClaimTooLong,
 	}
 }
+
+const MAX_CLAIM_SIZE: u8 = 255;
 
 // Dispatchable functions allows users to interact with the pallet and invoke state changes.
 // These functions materialize as "extrinsics", which are often compared to transactions.
@@ -66,6 +70,7 @@ decl_module! {
 
 		#[weight = 0]
 		pub fn create_claim(origin, claim: Vec<u8>) -> dispatch::DispatchResult {
+			ensure!(claim.len() <= MAX_CLAIM_SIZE.into(), Error::<T>::ClaimTooLong);
 			let sender = ensure_signed(origin)?;
 			ensure!(!Proofs::<T>::contains_key(&claim), Error::<T>::ProofAlreadyExist);
 			Proofs::<T>::insert(&claim, (sender.clone(), frame_system::Module::<T>::block_number()));
@@ -87,15 +92,27 @@ decl_module! {
 		}
 
 		#[weight = 0]
-		pub fn transfer_claim(origin, receiver: T::AccountId, claim: Vec<u8>) -> dispatch::DispatchResult {
+		pub fn transfer_claim(origin, claim: Vec<u8>, dest: T::AccountId) -> dispatch::DispatchResult {
 			let sender = ensure_signed(origin)?;
 			ensure!(Proofs::<T>::contains_key(&claim), Error::<T>::ClaimNotExist);
 			let (owner, _block_number) = Proofs::<T>::get(&claim);
 			ensure!(owner == sender, Error::<T>::NotClaimOwner);
-			Proofs::<T>::insert(&claim, (receiver.clone(), frame_system::Module::<T>::block_number()));
-			// Self::deposit_event(RawEvent::ClaimTransfer(origin, receiver, claim));
+			Proofs::<T>::insert(&claim, (dest.clone(), frame_system::Module::<T>::block_number()));
+			Self::deposit_event(RawEvent::ClaimTransfer(sender, dest.clone(), claim));
 
 			Ok(())
 		}
+
+		// #[weight = 0]
+		// pub fn transfer_claim1(origin, hash: BlakeTwo256) -> dispatch::DispatchResult {
+		// 	let sender = ensure_signed(origin)?;
+		// 	ensure!(Proofs::<T>::contains_key(hash), Error::<T>::ClaimNotExist);
+		// 	let (owner, _block_number) = Proofs::<T>::get(hash);
+		// 	ensure!(owner == sender, Error::<T>::NotClaimOwner);
+		// 	Proofs::<T>::insert(hash, (sender.clone(), frame_system::Module::<T>::block_number()));
+		// 	// Self::deposit_event(RawEvent::ClaimTransfer(origin, receiver, claim));
+		//
+		// 	Ok(())
+		// }
 	}
 }

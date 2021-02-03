@@ -1,12 +1,10 @@
 use super::*;
+use frame_support::{impl_outer_origin, parameter_types, traits::{OnFinalize, OnInitialize}, weights::Weight, };
 use sp_core::H256;
-use frame_support::{impl_outer_origin, parameter_types, weights::Weight, traits::{OnInitialize, OnFinalize}};
-use sp_runtime::{
-    traits::{BlakeTwo256, IdentityLookup}, testing::Header, Perbill,
-};
+use sp_runtime::{testing::Header, traits::{BlakeTwo256, IdentityLookup}, Perbill};
 
 impl_outer_origin! {
-	pub enum Origin for Test {}
+    pub enum Origin for Test {}
 }
 
 // For testing the module, we construct most of a mock runtime. This means
@@ -72,7 +70,6 @@ impl Trait for Test {
     type Randomness = pallet_randomness_collective_flip::Module<Test>;
 }
 
-pub type OwnedKittiesTest = OwnedKitties<Test>;
 pub type Kitties = Module<Test>;
 pub type System = frame_system::Module<Test>;
 

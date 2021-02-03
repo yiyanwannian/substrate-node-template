@@ -1,16 +1,18 @@
 use crate::mock::*;
-use crate::mock::OwnedKittiesTest;
-use crate::{OwnedKittiesList, KittyLinkedItem};
+use crate::{KittyLinkedItem, OwnedKittiesList};
 
 #[test]
 fn owned_kitties_can_append_values() {
     new_test_ext().execute_with(|| {
         OwnedKittiesList::<Test>::append(&0, 1);
 
-        assert_eq!(OwnedKittiesTest::get(&(0, None)), Some(KittyLinkedItem {
-            prev: Some(1),
-            next: Some(1),
-        }));
+        assert_eq!(
+            Kitties::owned_kitties(&(0, None)),
+            Some(KittyLinkedItem::<Test> {
+                prev: Some(1),
+                next: Some(1),
+            })
+        );
     });
 }
 
@@ -23,10 +25,13 @@ fn owned_kitties_can_remove_values() {
 
         OwnedKittiesList::<Test>::remove(&0, 2);
 
-        assert_eq!(OwnedKittiesTest::get(&(0, None)), Some(KittyLinkedItem {
-            prev: Some(3),
-            next: Some(1),
-        }));
+        assert_eq!(
+            Kitties::owned_kitties(&(0, None)),
+            Some(KittyLinkedItem::<Test> {
+                prev: Some(3),
+                next: Some(1),
+            })
+        );
     });
 }
 
